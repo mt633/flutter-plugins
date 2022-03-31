@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:cross_file/cross_file.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -68,7 +68,9 @@ class DesktopDrop {
         _notifyEvent(
           DropDoneEvent(
             location: _offset ?? Offset.zero,
-            files: paths.map((e) => XFile(e)).toList(),
+            files: paths
+                .map((e) => PlatformFile(name: e, path: e, size: 0))
+                .toList(),
           ),
         );
         _offset = null;
@@ -89,7 +91,9 @@ class DesktopDrop {
         }).where((e) => e.isNotEmpty);
         _notifyEvent(DropDoneEvent(
           location: Offset(offset[0], offset[1]),
-          files: paths.map((e) => XFile(e)).toList(),
+          files: paths
+              .map((e) => PlatformFile(name: e, path: e, size: 0))
+              .toList(),
         ));
         break;
       case "performOperation_web":
@@ -97,12 +101,12 @@ class DesktopDrop {
         final results = (call.arguments as List)
             .cast<Map>()
             .map((e) => WebDropItem.fromJson(e.cast<String, dynamic>()))
-            .map((e) => XFile(
-                  e.uri,
+            .map((e) => PlatformFile(
+                  path: e.uri,
                   name: e.name,
-                  length: e.size,
-                  lastModified: e.lastModified,
-                  mimeType: e.type,
+                  size: e.size,
+                  // lastModified: e.lastModified,
+                  // mimeType: e.type,
                 ))
             .toList();
         _notifyEvent(

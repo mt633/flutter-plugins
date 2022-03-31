@@ -1,6 +1,6 @@
 import 'package:desktop_drop/desktop_drop.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:cross_file/cross_file.dart';
 
 void main() {
   runApp(const MyApp());
@@ -42,7 +42,7 @@ class ExampleDragTarget extends StatefulWidget {
 }
 
 class _ExampleDragTargetState extends State<ExampleDragTarget> {
-  final List<XFile> _list = [];
+  final List<PlatformFile> _list = [];
 
   bool _dragging = false;
 
@@ -58,10 +58,8 @@ class _ExampleDragTargetState extends State<ExampleDragTarget> {
 
         debugPrint('onDragDone:');
         for (final file in detail.files) {
-          debugPrint('  ${file.path} ${file.name}'
-              '  ${await file.lastModified()}'
-              '  ${await file.length()}'
-              '  ${file.mimeType}');
+          debugPrint('  ${file.name}'
+              '  ${file.size}');
         }
       },
       onDragUpdated: (details) {
@@ -90,7 +88,7 @@ class _ExampleDragTargetState extends State<ExampleDragTarget> {
             if (_list.isEmpty)
               const Center(child: Text("Drop here"))
             else
-              Text(_list.map((e) => e.path).join("\n")),
+              Text(_list.map((e) => e.name).join("\n")),
             if (offset != null)
               Align(
                 alignment: Alignment.topRight,

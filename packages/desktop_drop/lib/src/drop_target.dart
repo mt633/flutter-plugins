@@ -1,4 +1,4 @@
-import 'package:cross_file/cross_file.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/widgets.dart';
 
 import 'channel.dart';
@@ -13,7 +13,7 @@ class DropDoneDetails {
     required this.globalPosition,
   });
 
-  final List<XFile> files;
+  final List<PlatformFile> files;
   final Offset localPosition;
   final Offset globalPosition;
 }

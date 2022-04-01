@@ -1,5 +1,6 @@
 import 'dart:async';
-import 'dart:html' as html show window, Url;
+import 'dart:html' as html show window, Url, FileReader, File;
+import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
@@ -26,7 +27,7 @@ class DesktopDropWeb {
   }
 
   void _registerEvents() {
-    html.window.onDrop.listen((event) {
+    html.window.onDrop.listen((event) async {
       event.preventDefault();
 
       final results = <WebDropItem>[];
@@ -35,9 +36,11 @@ class DesktopDropWeb {
         final items = event.dataTransfer.files;
         if (items != null) {
           for (final item in items) {
+            var bytes = await _streamMethod(item);
             results.add(
               WebDropItem(
                 uri: html.Url.createObjectUrl(item),
+                bytes: bytes,
                 name: item.name,
                 size: item.size,
                 type: item.type,
@@ -82,6 +85,15 @@ class DesktopDropWeb {
         event.client.y.toDouble(),
       ]);
     });
+  }
+
+  Future<Uint8List> _streamMethod(html.File file) async {
+    final reader = html.FileReader();
+    final resultReceived = reader.onLoad.first;
+    reader.readAsArrayBuffer(file);
+
+    await resultReceived;
+    return reader.result as Uint8List;
   }
 
   Future<dynamic> handleMethodCall(MethodCall call) async {

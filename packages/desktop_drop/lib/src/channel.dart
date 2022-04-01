@@ -97,7 +97,7 @@ class DesktopDrop {
         ));
         break;
       case "performOperation_web":
-        assert(_offset != null);
+        // assert(_offset != null);
         final results = (call.arguments as List)
             .cast<Map>()
             .map((e) => WebDropItem.fromJson(e.cast<String, dynamic>()))
@@ -105,6 +105,7 @@ class DesktopDrop {
                   path: e.uri,
                   name: e.name,
                   size: e.size,
+                  bytes: e.bytes
                   // lastModified: e.lastModified,
                   // mimeType: e.type,
                 ))

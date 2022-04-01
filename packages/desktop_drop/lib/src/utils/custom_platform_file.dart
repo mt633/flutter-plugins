@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
@@ -8,7 +9,7 @@ class CustomPlatformFile extends PlatformFile {
   static const MethodChannel _channel = MethodChannel('desktop_drop');
   DateTime? lastModified;
   String? mimeType;
-  Function(List<int>)? onStream;
+  StreamController<List<int>> streamController = StreamController();
   CustomPlatformFile(
       {required String name,
       required int size,
@@ -21,9 +22,7 @@ class CustomPlatformFile extends PlatformFile {
       try {
         switch (call.method) {
           case 'stream':
-            if (onStream != null && call.arguments[0] == name) {
-              onStream!(call.arguments[1]);
-            }
+            streamController.sink.add(call.arguments[1]);
             break;
         }
       } catch (e, s) {
@@ -32,11 +31,12 @@ class CustomPlatformFile extends PlatformFile {
     });
   }
 
-  stream(Function(List<int> chunk) onStream) {
-    this.onStream = onStream;
+  @override
+  Stream<List<int>>? get readStream {
     _channel.invokeMethod(
       "stream",
       name,
     );
+    return streamController.stream;
   }
 }

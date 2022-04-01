@@ -22,7 +22,15 @@ class CustomPlatformFile extends PlatformFile {
       try {
         switch (call.method) {
           case 'stream':
-            streamController.sink.add(call.arguments[1]);
+            var data = call.arguments[1];
+            if (data is List<int>) {
+              streamController.sink.add(data);
+            } else {
+              if (data == null) {
+                streamController.addError(call.arguments[2]);
+              }
+              streamController.close();
+            }
             break;
         }
       } catch (e, s) {

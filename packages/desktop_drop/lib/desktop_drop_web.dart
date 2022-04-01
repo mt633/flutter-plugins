@@ -110,12 +110,22 @@ class DesktopDropWeb {
         orElse: () => html.File([1], 'empty'),
       );
       if (file.name != 'empty') {
-        _openFileReadStream(file).listen((event) {
-          channel.invokeMethod(
+        _openFileReadStream(file).listen(
+          (event) {
+            channel.invokeMethod(
+              "stream",
+              [file.name, event],
+            );
+          },
+          onDone: () => channel.invokeMethod(
             "stream",
-            [file.name, event],
-          );
-        });
+            [file.name, []],
+          ),
+          onError: (e) => channel.invokeMethod(
+            "stream",
+            [file.name, null, e],
+          ),
+        );
       }
       return;
     }

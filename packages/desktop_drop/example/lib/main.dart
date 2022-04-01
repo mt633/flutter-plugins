@@ -1,5 +1,4 @@
 import 'package:desktop_drop/desktop_drop.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -42,7 +41,7 @@ class ExampleDragTarget extends StatefulWidget {
 }
 
 class _ExampleDragTargetState extends State<ExampleDragTarget> {
-  final List<PlatformFile> _list = [];
+  final List<CustomPlatformFile> _list = [];
 
   bool _dragging = false;
 

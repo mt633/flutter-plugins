@@ -1,5 +1,6 @@
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/painting.dart';
+
+import '../desktop_drop.dart';
 
 abstract class DropEvent {
   Offset location;
@@ -25,7 +26,7 @@ class DropUpdateEvent extends DropEvent {
 }
 
 class DropDoneEvent extends DropEvent {
-  final List<PlatformFile> files;
+  final List<CustomPlatformFile> files;
 
   DropDoneEvent({
     required Offset location,

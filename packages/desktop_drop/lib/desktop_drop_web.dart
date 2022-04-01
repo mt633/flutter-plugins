@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:html' as html show window, Url, FileReader, File;
-import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
@@ -11,6 +10,8 @@ import 'src/drop_item.dart';
 /// A web implementation of the DesktopDrop plugin.
 class DesktopDropWeb {
   final MethodChannel channel;
+  final int _readStreamChunkSize = 300 * 1024; // 300 KB
+  final List<html.File> _files = [];
 
   DesktopDropWeb._private(this.channel);
 
@@ -35,12 +36,12 @@ class DesktopDropWeb {
       try {
         final items = event.dataTransfer.files;
         if (items != null) {
+          _files.clear();
+          _files.addAll(items);
           for (final item in items) {
-            var bytes = await _streamMethod(item);
             results.add(
               WebDropItem(
                 uri: html.Url.createObjectUrl(item),
-                bytes: bytes,
                 name: item.name,
                 size: item.size,
                 type: item.type,
@@ -87,16 +88,37 @@ class DesktopDropWeb {
     });
   }
 
-  Future<Uint8List> _streamMethod(html.File file) async {
+  Stream<List<int>> _openFileReadStream(html.File file) async* {
     final reader = html.FileReader();
-    final resultReceived = reader.onLoad.first;
-    reader.readAsArrayBuffer(file);
-
-    await resultReceived;
-    return reader.result as Uint8List;
+    int start = 0;
+    while (start < file.size) {
+      final end = start + _readStreamChunkSize > file.size
+          ? file.size
+          : start + _readStreamChunkSize;
+      final blob = file.slice(start, end);
+      reader.readAsArrayBuffer(blob);
+      await reader.onLoad.first;
+      yield reader.result as List<int>;
+      start += _readStreamChunkSize;
+    }
   }
 
   Future<dynamic> handleMethodCall(MethodCall call) async {
+    if (call.method == 'stream') {
+      var file = _files.firstWhere(
+        (element) => element.name == call.arguments,
+        orElse: () => html.File([1], 'empty'),
+      );
+      if (file.name != 'empty') {
+        _openFileReadStream(file).listen((event) {
+          channel.invokeMethod(
+            "stream",
+            [file.name, event],
+          );
+        });
+      }
+      return;
+    }
     throw PlatformException(
       code: 'Unimplemented',
       details: 'desktop_drop for web doesn\'t implement \'${call.method}\'',

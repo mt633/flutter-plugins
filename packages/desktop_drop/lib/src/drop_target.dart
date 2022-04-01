@@ -1,6 +1,6 @@
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/widgets.dart';
 
+import '../desktop_drop.dart';
 import 'channel.dart';
 import 'events.dart';
 import 'utils/platform.dart' if (dart.library.html) 'utils/platform_web.dart';
@@ -13,7 +13,7 @@ class DropDoneDetails {
     required this.globalPosition,
   });
 
-  final List<PlatformFile> files;
+  final List<CustomPlatformFile> files;
   final Offset localPosition;
   final Offset globalPosition;
 }

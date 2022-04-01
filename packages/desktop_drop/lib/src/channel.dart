@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:file_picker/file_picker.dart';
+import 'package:desktop_drop/src/utils/custom_platform_file.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -69,7 +69,7 @@ class DesktopDrop {
           DropDoneEvent(
             location: _offset ?? Offset.zero,
             files: paths
-                .map((e) => PlatformFile(name: e, path: e, size: 0))
+                .map((e) => CustomPlatformFile(name: e, path: e, size: 0))
                 .toList(),
           ),
         );
@@ -92,28 +92,29 @@ class DesktopDrop {
         _notifyEvent(DropDoneEvent(
           location: Offset(offset[0], offset[1]),
           files: paths
-              .map((e) => PlatformFile(name: e, path: e, size: 0))
+              .map((e) => CustomPlatformFile(name: e, path: e, size: 0))
               .toList(),
         ));
         break;
       case "performOperation_web":
-        // assert(_offset != null);
+        assert(_offset != null);
         final results = (call.arguments as List)
             .cast<Map>()
             .map((e) => WebDropItem.fromJson(e.cast<String, dynamic>()))
-            .map((e) => PlatformFile(
+            .map((e) => CustomPlatformFile(
                   path: e.uri,
                   name: e.name,
                   size: e.size,
-                  bytes: e.bytes
-                  // lastModified: e.lastModified,
-                  // mimeType: e.type,
+                  lastModified: e.lastModified,
+                  mimeType: e.type,
                 ))
             .toList();
         _notifyEvent(
           DropDoneEvent(location: _offset ?? Offset.zero, files: results),
         );
         _offset = null;
+        break;
+      case "stream":
         break;
       default:
         throw UnimplementedError('${call.method} not implement.');

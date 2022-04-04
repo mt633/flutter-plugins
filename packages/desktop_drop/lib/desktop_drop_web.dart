@@ -36,7 +36,6 @@ class DesktopDropWeb {
       try {
         final items = event.dataTransfer.files;
         if (items != null) {
-          _files.clear();
           _files.addAll(items);
           for (final item in items) {
             results.add(
@@ -117,14 +116,25 @@ class DesktopDropWeb {
               [file.name, event],
             );
           },
-          onDone: () => channel.invokeMethod(
-            "stream",
-            [file.name, []],
-          ),
-          onError: (e) => channel.invokeMethod(
-            "stream",
-            [file.name, null, e],
-          ),
+          onDone: () {
+            channel.invokeMethod(
+              "stream",
+              [file.name, []],
+            );
+            _files.remove(file);
+          },
+          onError: (e) {
+            channel.invokeMethod(
+              "stream",
+              [file.name, null, e],
+            );
+            _files.remove(file);
+          },
+        );
+      } else {
+        channel.invokeMethod(
+          "stream",
+          [call.arguments, null, 'No such file!'],
         );
       }
       return;

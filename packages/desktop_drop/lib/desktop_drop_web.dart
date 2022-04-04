@@ -104,11 +104,9 @@ class DesktopDropWeb {
 
   Future<dynamic> handleMethodCall(MethodCall call) async {
     if (call.method == 'stream') {
-      var file = _files.firstWhere(
-        (element) => element.name == call.arguments,
-        orElse: () => html.File([1], 'empty'),
-      );
-      if (file.name != 'empty') {
+      try {
+        var file =
+            _files.firstWhere((element) => element.name == call.arguments);
         _openFileReadStream(file).listen(
           (event) {
             channel.invokeMethod(
@@ -131,7 +129,7 @@ class DesktopDropWeb {
             _files.remove(file);
           },
         );
-      } else {
+      } catch (e) {
         channel.invokeMethod(
           "stream",
           [call.arguments, null, 'No such file!'],

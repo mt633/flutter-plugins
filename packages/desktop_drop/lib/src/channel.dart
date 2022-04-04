@@ -22,7 +22,7 @@ class DesktopDrop {
   var _inited = false;
 
   Offset? _offset;
-  List<CustomPlatformFile>? results;
+  static final List<CustomPlatformFile> _globalResults = [];
 
   void init() {
     if (_inited) {
@@ -69,13 +69,14 @@ class DesktopDrop {
       case "performOperation":
         if (_offset != null) {
           final paths = (call.arguments as List).cast<String>();
-          results = paths
+          var results = paths
               .map((e) => CustomPlatformFile(name: e, path: e, size: 0))
               .toList();
+          _globalResults.addAll(results);
           _notifyEvent(
             DropDoneEvent(
               location: _offset ?? Offset.zero,
-              files: results!,
+              files: results,
             ),
           );
           _offset = null;
@@ -95,18 +96,19 @@ class DesktopDrop {
             }
             return '';
           }).where((e) => e.isNotEmpty);
-          results = paths
+          var results = paths
               .map((e) => CustomPlatformFile(name: e, path: e, size: 0))
               .toList();
+          _globalResults.addAll(results);
           _notifyEvent(DropDoneEvent(
             location: Offset(offset[0], offset[1]),
-            files: results!,
+            files: results,
           ));
         }
         break;
       case "performOperation_web":
         if (_offset != null) {
-          results = (call.arguments as List)
+          var results = (call.arguments as List)
               .cast<Map>()
               .map((e) => WebDropItem.fromJson(e.cast<String, dynamic>()))
               .map((e) => CustomPlatformFile(
@@ -117,20 +119,22 @@ class DesktopDrop {
                     mimeType: e.type,
                   ))
               .toList();
+          _globalResults.addAll(results);
           _notifyEvent(
-            DropDoneEvent(location: _offset ?? Offset.zero, files: results!),
+            DropDoneEvent(location: _offset ?? Offset.zero, files: results),
           );
           _offset = null;
         }
         break;
       case "stream":
         try {
-          if (results != null) {
+          if (_globalResults.isNotEmpty) {
             var fileName = call.arguments[0];
             var file =
-                results!.firstWhere((element) => element.name == fileName);
+                _globalResults.firstWhere((element) => element.name == fileName);
             var data = call.arguments[1];
             file.stream(data, data == null ? call.arguments[2] : '');
+            if (data is! List<int>) _globalResults.remove(file);
           }
         } catch (e, s) {
           debugPrint('_handleMethodChannel: $e $s');

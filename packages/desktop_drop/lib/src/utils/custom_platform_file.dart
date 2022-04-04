@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class CustomPlatformFile extends PlatformFile {
@@ -17,26 +16,17 @@ class CustomPlatformFile extends PlatformFile {
       required String path,
       this.lastModified,
       this.mimeType})
-      : super(name: name, size: size, bytes: bytes, path: path) {
-    _channel.setMethodCallHandler((call) async {
-      try {
-        switch (call.method) {
-          case 'stream':
-            var data = call.arguments[1];
-            if (data is List<int>) {
-              streamController.sink.add(data);
-            } else {
-              if (data == null) {
-                streamController.addError(call.arguments[2]);
-              }
-              streamController.close();
-            }
-            break;
-        }
-      } catch (e, s) {
-        debugPrint('_handleMethodChannel: $e $s');
+      : super(name: name, size: size, bytes: bytes, path: path);
+
+  void stream(var data, var error) {
+    if (data is List<int>) {
+      streamController.sink.add(data);
+    } else {
+      if (data == null) {
+        streamController.addError(error);
       }
-    });
+      streamController.close();
+    }
   }
 
   @override

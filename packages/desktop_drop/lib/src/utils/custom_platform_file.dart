@@ -9,14 +9,17 @@ class CustomPlatformFile extends PlatformFile {
   DateTime? lastModified;
   String? mimeType;
   StreamController<List<int>> streamController = StreamController();
-  CustomPlatformFile(
-      {required String name,
-      required int size,
-      Uint8List? bytes,
-      required String path,
-      this.lastModified,
-      this.mimeType})
-      : super(name: name, size: size, bytes: bytes, path: path);
+  final Stream<List<int>>? _readStream;
+  CustomPlatformFile({
+    required String name,
+    required int size,
+    Uint8List? bytes,
+    String? path,
+    this.lastModified,
+    this.mimeType,
+    Stream<List<int>>? readStream,
+  })  : _readStream = readStream,
+        super(name: name, size: size, bytes: bytes, path: path);
 
   void stream(var data, var error) {
     if (data is List<int>) {
@@ -31,10 +34,14 @@ class CustomPlatformFile extends PlatformFile {
 
   @override
   Stream<List<int>>? get readStream {
-    _channel.invokeMethod(
-      "stream",
-      name,
-    );
-    return streamController.stream;
+    if (_readStream == null) {
+      _channel.invokeMethod(
+        "stream",
+        name,
+      );
+      return streamController.stream;
+    } else {
+      return _readStream;
+    }
   }
 }
